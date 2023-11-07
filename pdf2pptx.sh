@@ -44,9 +44,11 @@ if [ $n_pages -eq 0 ]; then
    exit 1
 fi
 
-for ((i=0; i<n_pages; i++))
+for ((i=1; i<=n_pages; i++))
 do
-    convert -density $density $colorspace -resize "x${resolution}" "$1[$i]" "$tempname"/slide-$i.png
+#   convert -density $density $colorspace -resize "x${resolution}" "$1[$i]" "$tempname"/slide-$i.png
+    inkscape --export-type=svg --pages=$i --pdf-poppler -l "$1" -o "$tempname"/slide-$i.svg
+
     returncode=$?
     if [ $returncode -ne 0 ]; then break; fi
 done
@@ -78,7 +80,7 @@ cp -r "$mydir"/template "$pptname"
 
 mkdir "$pptname"/ppt/media
 
-cp "$tempname"/*.png "$pptname/ppt/media/"
+cp "$tempname"/*.svg "$pptname/ppt/media/"
 
 function call_sed {
 	if [ "$(uname -s)" == "Darwin" ]; then
@@ -111,13 +113,13 @@ function add_slide {
 
 function make_slide {
 	cp ../slides/slide1.xml ../slides/slide-$1.xml
-	cat ../slides/_rels/slide1.xml.rels | sed "s/image1\.JPG/slide-${slide}.png/g" > ../slides/_rels/slide-$1.xml.rels
+	cat ../slides/_rels/slide1.xml.rels | sed "s/image1\.JPG/slide-${slide}.svg/g" > ../slides/_rels/slide-$1.xml.rels
 	add_slide $1
 }
 
 pushd "$pptname"/ppt/media/
 count=`ls -ltr | wc -l`
-for (( slide=$count-2; slide>=0; slide-- ))
+for (( slide=$count-1; slide>0; slide-- ))
 do
 	echo "Processing "$slide
 	make_slide $slide
